@@ -34,6 +34,9 @@ export default function Header() {
           <Link href="/contact" className="gold-underline">
             Contact
           </Link>
+          <Link href="/admin" className="gold-underline">
+            Administration
+          </Link>
         </nav>
 
         <div className="flex items-center gap-4">
@@ -74,6 +77,9 @@ export default function Header() {
           </Link>
           <Link href="/contact" onClick={() => setOpen(false)}>
             Contact
+          </Link>
+          <Link href="/admin" onClick={() => setOpen(false)}>
+            Administration
           </Link>
         </nav>
       )}
