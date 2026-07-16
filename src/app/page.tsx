@@ -100,9 +100,9 @@ export default async function Home() {
           <h2 className="font-display text-3xl text-ink">Elles nous font confiance</h2>
           <div className="mt-6 grid gap-6 sm:grid-cols-3">
             {[
-              { name: "Aïcha, Dakar", text: "Commande reçue rapidement, la qualité est vraiment au rendez-vous." },
-              { name: "Fatoumata, Bamako", text: "Le service client sur WhatsApp est très réactif, je recommande." },
-              { name: "Sophie, Paris", text: "Superbe robe, exactement comme sur les photos." },
+              { name: "Fanta, Dakar", text: "Commande reçue rapidement, la qualité est vraiment au rendez-vous." },
+              { name: "Coumba, Bamako", text: "Le service client sur WhatsApp est très réactif, je recommande." },
+              { name: "Assetou, Paris", text: "Superbe robe, exactement comme sur les photos." },
             ].map((t) => (
               <div key={t.name} className="border border-line bg-paper p-6">
                 <p className="text-ink/70">&laquo; {t.text} &raquo;</p>
