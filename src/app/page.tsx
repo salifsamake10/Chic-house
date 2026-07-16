@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import { getAllProducts, categories } from "@/data/products";
@@ -39,12 +40,15 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-          <div className="relative aspect-[4/5] w-full bg-gradient-to-br from-rose/60 via-mist to-gold/20">
-            <div className="flex h-full w-full items-center justify-center">
-              <span className="font-display text-3xl italic text-ink/30">
-                Chic House
-              </span>
-            </div>
+            <div className="relative aspect-[9/16] w-full max-w-sm justify-self-center overflow-hidden bg-mist sm:max-w-md md:justify-self-end">
+            <Image
+              src="/hero-accueil.jpeg"
+              alt="Tenue Chic House portée"
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 768px) 90vw, 450px"
+            />
           </div>
         </div>
       </section>

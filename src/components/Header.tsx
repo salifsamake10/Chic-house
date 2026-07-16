@@ -1,5 +1,8 @@
 "use client";
 
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useCart } from "@/context/CartContext";
@@ -11,10 +14,11 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Link href="/" className="font-display text-2xl tracking-wide text-ink">
-          CHIC HOUSE
-        </Link>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3">
+      <Link href="/" className="flex items-center gap-3">
+        <Image src="/logo.png" alt="Chic House" width={44} height={44} className="rounded-full" priority />
+        <span className="font-display text-2xl tracking-wide text-ink">CHIC HOUSE</span>
+      </Link>
 
         <nav className="hidden items-center gap-6 text-sm uppercase tracking-wide md:flex">
           <Link href="/" className="gold-underline">

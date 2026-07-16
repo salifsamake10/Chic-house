@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -5,8 +6,11 @@ export default function Footer() {
     <footer className="mt-24 border-t border-line bg-mist">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3">
         <div>
-          <h4 className="font-display text-xl">CHIC HOUSE</h4>
-          <p className="mt-2 text-sm text-ink/60">
+          <div className="flex items-center gap-3">
+            <Image src="/logo.png" alt="Chic House" width={40} height={40} className="rounded-full" />
+            <h4 className="font-display text-xl">CHIC HOUSE</h4>
+          </div>
+          <p className="mt-3 text-sm text-ink/60">
             Mode élégante, livrée avec soin au Sénégal, au Mali, et partout dans le monde via WhatsApp.
           </p>
         </div>
