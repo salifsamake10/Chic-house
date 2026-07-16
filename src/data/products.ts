@@ -1,8 +1,10 @@
+import { supabase } from "@/lib/supabase";
+
 export type Product = {
   slug: string;
   name: string;
   price: number;
-  category: Category;
+  category: string;
   sizes: string[];
   colors: string[];
   description: string;
@@ -10,6 +12,7 @@ export type Product = {
   isPromo?: boolean;
   promoPrice?: number;
   stock: number;
+  imageUrl?: string;
 };
 
 export const categories = [
@@ -21,105 +24,55 @@ export const categories = [
   { slug: "accessoires", label: "Accessoires" },
 ] as const;
 
-export type Category = (typeof categories)[number]["slug"];
-
-// Données de démonstration — à remplacer par de vrais produits et photos
-// via le tableau d'administration une fois Supabase connecté.
-export const products: Product[] = [
-  {
-    slug: "ensemble-elegance",
-    name: "Ensemble Élégance",
-    price: 18500,
-    category: "ensembles",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Noir", "Rose", "Blanc"],
-    description:
-      "Ensemble deux pièces en tissu fluide, coupe ajustée et finitions soignées. Parfait pour une occasion élégante ou une sortie en journée.",
-    isNew: true,
-    stock: 12,
-  },
-  {
-    slug: "robe-soiree-dora",
-    name: "Robe de soirée Dora",
-    price: 24000,
-    category: "robes",
-    sizes: ["S", "M", "L"],
-    colors: ["Noir", "Doré"],
-    description:
-      "Robe longue fendue, tissu satiné à reflets dorés. Une pièce statement pour vos soirées.",
-    isPromo: true,
-    promoPrice: 19900,
-    stock: 5,
-  },
-  {
-    slug: "robe-fleurie-aya",
-    name: "Robe fleurie Aya",
-    price: 15500,
-    category: "robes",
-    sizes: ["S", "M", "L", "XL"],
-    colors: ["Rose", "Blanc"],
-    description: "Robe légère à motifs floraux, idéale pour la saison chaude.",
-    stock: 8,
-  },
-  {
-    slug: "pantalon-taille-haute-nour",
-    name: "Pantalon taille haute Nour",
-    price: 12000,
-    category: "pantalons",
-    sizes: ["S", "M", "L"],
-    colors: ["Noir", "Beige"],
-    description: "Pantalon fluide taille haute, coupe droite, très confortable.",
-    stock: 15,
-  },
-  {
-    slug: "jupe-plissee-lina",
-    name: "Jupe plissée Lina",
-    price: 11000,
-    category: "jupes",
-    sizes: ["S", "M", "L"],
-    colors: ["Doré", "Noir"],
-    description: "Jupe plissée mi-longue, tombé impeccable, taille élastiquée.",
-    isNew: true,
-    stock: 10,
-  },
-  {
-    slug: "sac-a-main-capitale",
-    name: "Sac à main Capitale",
-    price: 21000,
-    category: "sacs",
-    sizes: [],
-    colors: ["Noir", "Doré"],
-    description: "Sac à main structuré, finitions dorées, bandoulière amovible.",
-    stock: 6,
-  },
-  {
-    slug: "sac-bandouliere-rosa",
-    name: "Sac bandoulière Rosa",
-    price: 14500,
-    category: "sacs",
-    sizes: [],
-    colors: ["Rose poudré"],
-    description: "Petit sac bandoulière, format pratique pour le quotidien.",
-    stock: 0,
-  },
-  {
-    slug: "boucles-oreilles-eclat",
-    name: "Boucles d'oreilles Éclat",
-    price: 6500,
-    category: "accessoires",
-    sizes: [],
-    colors: ["Doré"],
-    description: "Boucles d'oreilles pendantes plaquées or, légères à porter.",
-    isNew: true,
-    stock: 20,
-  },
-];
-
-export function getProductBySlug(slug: string) {
-  return products.find((p) => p.slug === slug);
+// Convertit une ligne de la table Supabase (snake_case) vers notre type Product (camelCase)
+function mapRow(row: any): Product {
+  return {
+    slug: row.slug,
+    name: row.name,
+    price: row.price,
+    category: row.category,
+    sizes: row.sizes ?? [],
+    colors: row.colors ?? [],
+    description: row.description ?? "",
+    isNew: row.is_new ?? false,
+    isPromo: row.is_promo ?? false,
+    promoPrice: row.promo_price ?? undefined,
+    stock: row.stock ?? 0,
+    imageUrl: row.image_url ?? undefined,
+  };
 }
 
-export function getProductsByCategory(category?: string) {
-  if (!category) return products;
-  return products.filter((p) => p.category === category);
+export async function getAllProducts(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erreur lors du chargement des produits :", error.message);
+    return [];
+  }
+  return data.map(mapRow);
+}
+
+export async function getProductsByCategory(category?: string): Promise<Product[]> {
+  const query = supabase.from("products").select("*").order("created_at", { ascending: false });
+  const { data, error } = category ? await query.eq("category", category) : await query;
+
+  if (error) {
+    console.error("Erreur lors du chargement des produits :", error.message);
+    return [];
+  }
+  return data.map(mapRow);
+}
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) return null;
+  return mapRow(data);
 }

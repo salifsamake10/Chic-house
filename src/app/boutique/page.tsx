@@ -10,7 +10,7 @@ export default async function BoutiquePage({
   searchParams: Promise<{ categorie?: string }>;
 }) {
   const { categorie } = await searchParams;
-  const items = getProductsByCategory(categorie);
+  const items = await getProductsByCategory(categorie);
   const activeLabel = categories.find((c) => c.slug === categorie)?.label;
 
   return (

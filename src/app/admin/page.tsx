@@ -1,12 +1,7 @@
-import { products } from "@/data/products";
-
-export const metadata = { title: "Administration — Chic House" };
-
-function formatFcfa(amount: number) {
-  return new Intl.NumberFormat("fr-FR").format(amount) + " FCFA";
-}
-
-export default function AdminPage() {
+import { getAllProducts } from "@/data/products";
+// ...
+export default async function AdminPage() {
+  const products = await getAllProducts();
   return (
     <div className="mx-auto max-w-5xl px-5 py-12">
       <h1 className="font-display text-3xl text-ink">Administration</h1>

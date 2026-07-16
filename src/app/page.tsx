@@ -1,8 +1,9 @@
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
-import { products, categories } from "@/data/products";
+import { getAllProducts, categories } from "@/data/products";
 
-export default function Home() {
+export default async function Home() {
+  const products = await getAllProducts();
   const nouveautes = products.filter((p) => p.isNew).slice(0, 4);
   const bestSellers = products.slice(0, 4);
 
