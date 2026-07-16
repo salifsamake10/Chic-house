@@ -1,7 +1,7 @@
 // Centralise la logique WhatsApp : toute commande, quel que soit le pays
 // du client, se termine par un message pré-rempli envoyé sur ce numéro.
 // -> Remplacer par le vrai numéro de la boutique (format international, sans + ni espaces).
-export const WHATSAPP_NUMBER = "22300000000"; // TODO: numéro réel de Chic House
+export const WHATSAPP_NUMBER = "22383853578"; // TODO: numéro réel de Chic House
 
 export type WhatsAppItem = {
   name: string;
