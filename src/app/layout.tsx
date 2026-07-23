@@ -5,7 +5,7 @@ import { CartProvider } from "@/context/CartContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import WhatsAppFloatingButton from "@/components/WhatsAppFloatingButton";
-
+import { FavoritesProvider } from "@/context/FavoritesContext";
 const cormorant = Cormorant_Garamond({
   variable: "--font-cormorant",
   subsets: ["latin"],
@@ -29,12 +29,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr">
       <body className={`${cormorant.variable} ${manrope.variable} antialiased`}>
-        <CartProvider>
-          <Header />
-          <main className="min-h-[60vh]">{children}</main>
-          <Footer />
-          <WhatsAppFloatingButton />
-        </CartProvider>
+        <FavoritesProvider>
+  <CartProvider>
+    <Header />
+    <main className="min-h-[60vh]">{children}</main>
+    <Footer />
+    <WhatsAppFloatingButton />
+  </CartProvider>
+</FavoritesProvider>
       </body>
     </html>
   );

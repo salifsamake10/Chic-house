@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Product } from "@/data/products";
 import { useCart } from "@/context/CartContext";
 import { buildWhatsAppLink } from "@/lib/whatsapp";
+import { useFavorites } from "@/context/FavoritesContext";
 
 function formatFcfa(amount: number) {
   return new Intl.NumberFormat("fr-FR").format(amount) + " FCFA";
@@ -11,6 +12,7 @@ function formatFcfa(amount: number) {
 
 export default function ProductDetail({ product }: { product: Product }) {
   const { addItem } = useCart();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [size, setSize] = useState<string | undefined>(product.sizes[0]);
   const [color, setColor] = useState<string | undefined>(product.colors[0]);
   const [quantity, setQuantity] = useState(1);
@@ -18,6 +20,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   const outOfStock = product.stock <= 0;
   const price = product.isPromo && product.promoPrice ? product.promoPrice : product.price;
+  const favorite = isFavorite(product.slug);
 
   const handleAdd = () => {
     addItem(product, { size, color, quantity });
@@ -35,6 +38,15 @@ export default function ProductDetail({ product }: { product: Product }) {
         <div className="flex h-full w-full items-center justify-center">
           <span className="font-display text-2xl italic text-ink/30">Chic House</span>
         </div>
+        <button
+  onClick={() => toggleFavorite(product.slug)}
+  aria-label={favorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+  className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-paper/80 text-ink hover:bg-paper"
+>
+  <svg viewBox="0 0 24 24" className="h-5 w-5" fill={favorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth={1.8}>
+    <path d="M12 21s-7.5-4.6-10-9.1C.5 8.4 2.2 5 5.6 5c1.9 0 3.4 1 4.4 2.4C11 6 12.5 5 14.4 5 17.8 5 19.5 8.4 22 11.9 19.5 16.4 12 21 12 21Z" />
+  </svg>
+</button>
       </div>
 
       <div>
