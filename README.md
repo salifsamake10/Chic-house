@@ -1,15 +1,15 @@
 # Chic House -- Site e-commerce (V1)
 
-Site vitrine + boutique pour Chic House. Version V1 : catalogue complet, panier,
-et commande finalisee via WhatsApp (aucun paiement en ligne pour l'instant,
-conformement au cahier des charges).
+Site vitrine + boutique pour Chic House. Catalogue connecte a Supabase, panier,
+recherche instantanee, favoris, filtres, produits similaires, et commande
+finalisee entierement via WhatsApp (aucun paiement en ligne pour l'instant).
 
 ## Stack
 
-- **Next.js 16** (App Router) + TypeScript
+- **Next.js** (App Router) + TypeScript
 - **Tailwind CSS v4**
-- Donnees produits en dur dans `src/data/products.ts` (a remplacer par Supabase en V2)
-- Panier gere en `localStorage` via `src/context/CartContext.tsx`
+- **Supabase** : base de donnees (catalogue produits) + authentification (admin)
+- Panier et favoris geres en `localStorage` (contextes React)
 
 ## Demarrer en local
 
@@ -20,52 +20,90 @@ npm run dev
 
 Le site est alors accessible sur http://localhost:3000
 
-## Avant la mise en ligne -- a faire
+Necessite un fichier `.env.local` a la racine (voir "Variables d'environnement" ci-dessous) -- sans lui, le site ne peut pas se connecter a Supabase.
 
-1. **Numero WhatsApp** : remplacer la valeur `WHATSAPP_NUMBER` dans
-   `src/lib/whatsapp.ts` par le vrai numero de Chic House (format
-   international, ex. `22370000000`, sans `+` ni espaces).
-2. **Photos produits** : les fiches produits et vignettes utilisent des
-   placeholders (degrades colores). Remplacer par de vraies photos, idealement
-   hebergees sur Cloudinary une fois le compte cree.
-3. **Produits reels** : completer/remplacer le contenu de
-   `src/data/products.ts` avec le vrai catalogue (nom, prix, tailles,
-   couleurs, stock).
-4. **Mentions legales** : completer `src/app/cgv/page.tsx` avec les
-   informations legales de l'entite malienne.
-5. **Design** : ajuster les couleurs si besoin dans
-   `src/app/globals.css` (variables `--color-rose`, `--color-gold`, etc.).
+## Variables d'environnement
+
+Creez un fichier `.env.local` a la racine du projet (jamais pousse sur GitHub, deja exclu par `.gitignore`) :
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=votre_cle_anon
+```
+
+Ces memes valeurs doivent **aussi** etre ajoutees dans **Vercel -> Settings -> Environment Variables** pour que le site fonctionne une fois deploye (les deux environnements, local et Vercel, sont independants).
 
 ## Structure du projet
 
 ```
 src/
   app/
-    page.tsx               -> Accueil
-    boutique/               -> Liste des produits + filtre par categorie
-    produit/[slug]/          -> Fiche produit
-    panier/                  -> Panier + bouton "Commander sur WhatsApp"
+    page.tsx                     -> Accueil (hero avec photo, nouveautes, best-sellers, temoignages)
+    boutique/                     -> Liste des produits, filtre par categorie (URL) + filtres taille/couleur/prix
+    produit/[slug]/                -> Fiche produit + section "Vous aimerez aussi" (produits similaires)
+    panier/                        -> Panier + bouton "Commander sur WhatsApp"
+    favoris/                       -> Liste des favoris enregistres (localStorage)
     contact/, a-propos/, cgv/
-    admin/                   -> Apercu produits (lecture seule pour l'instant)
-  components/                -> Header, Footer, ProductCard, bouton WhatsApp flottant
-  context/CartContext.tsx    -> Etat global du panier
-  data/products.ts           -> Catalogue (a connecter a Supabase en V2)
-  lib/whatsapp.ts             -> Construction des liens/messages WhatsApp
+    admin/                         -> Interface admin protegee
+      login/                       -> Connexion (email/mot de passe Supabase Auth)
+      produits/nouveau/             -> Formulaire d'ajout de produit
+      produits/[slug]/               -> Formulaire de modification de produit
+      layout.tsx                    -> Protege toutes les routes /admin/*
+  components/
+    Header.tsx                     -> Logo, navigation, recherche, favoris, panier
+    Footer.tsx                     -> Logo, liens, infos contact
+    ProductCard.tsx                 -> Vignette produit (avec bouton favori)
+    SearchOverlay.tsx               -> Fenetre de recherche instantanee
+    BoutiqueFilters.tsx             -> Filtres taille / couleur / prix (page Boutique)
+    WhatsAppFloatingButton.tsx      -> Bouton WhatsApp flottant global
+  context/
+    CartContext.tsx                 -> Etat global du panier (localStorage)
+    FavoritesContext.tsx            -> Etat global des favoris (localStorage)
+  data/products.ts                  -> Requetes Supabase (liste, par categorie, par slug)
+  lib/
+    supabase.ts                     -> Client Supabase (lit .env.local)
+    whatsapp.ts                     -> Construction des liens/messages WhatsApp
 ```
 
-## Prochaines etapes (V2 -- voir le cahier des charges)
+## Base de donnees Supabase
 
-- Connecter Supabase pour gerer les produits depuis l'admin (ajout,
-  modification, suppression) au lieu du fichier `products.ts` statique.
-- Authentification admin (Supabase Auth) pour securiser `/admin`.
-- Paiement en ligne (Wave / Orange Money) pour les commandes Senegal/Mali.
-- Upload d'images vers Cloudinary depuis l'admin.
-- Deploiement : Vercel pour le site, Supabase pour les donnees.
+Table unique `products` avec row-level security activee :
 
-## Deploiement rapide (une fois pret)
+- **Lecture** : publique (tout le monde peut voir les produits)
+- **Ecriture** (insert/update/delete) : reservee aux utilisateurs authentifies (vous, via `/admin`)
+
+Colonnes : `slug`, `name`, `price`, `category`, `sizes` (tableau), `colors` (tableau), `description`, `is_new`, `is_promo`, `promo_price`, `stock`, `image_url`, `created_at`.
+
+## Compte admin
+
+Cree manuellement dans **Supabase -> Authentication -> Users**. Connexion sur `/admin/login`, puis gestion complete du catalogue (ajout, modification, suppression) sur `/admin`.
+
+## Fonctionnement des commandes
+
+**Aucune commande n'est enregistree dans Supabase.** Le site fonctionne comme un catalogue : chaque "Ajouter au panier" reste en local (navigateur du client), et le bouton final **"Commander sur WhatsApp"** ouvre une conversation WhatsApp avec un message pre-rempli (produits, tailles, couleurs, quantites, total). La suite -- adresse, paiement, livraison -- se negocie manuellement sur WhatsApp, comme avant le site.
+
+Le numero WhatsApp utilise partout sur le site est defini dans `src/lib/whatsapp.ts` (`WHATSAPP_NUMBER`).
+
+## Deploiement
+
+Le projet est connecte a GitHub (`salifsamake10/Chic-house`) et a Vercel : chaque `git push` sur la branche `main` declenche un redeploiement automatique.
 
 ```bash
-# Pousser le projet sur GitHub, puis connecter le repo sur vercel.com
-# Ou en local avec la CLI Vercel :
-npx vercel
+git add .
+git commit -m "Description du changement"
+git push
 ```
+
+## Points de vigilance connus
+
+- **OneDrive** : si le projet est dans un dossier synchronise OneDrive/Google Drive/Dropbox, des erreurs de verrouillage de fichier (`.next`) peuvent apparaitre. Si ca arrive : fermez `npm run dev`, supprimez le dossier `.next`, relancez. Pour eviter le probleme durablement, sortir le projet de OneDrive.
+- **Extensions de fichiers Windows** : en enregistrant une image (logo, photo), Windows peut creer un double suffixe (ex. `logo.png.jpeg` au lieu de `logo.png`). Toujours verifier avec `dir` dans PowerShell que le nom de fichier est exact.
+- **Supabase en pause** : sur le plan gratuit, un projet Supabase inactif plus d'une semaine se met en pause automatiquement (erreur "521: Web server is down" ou "fetch failed"). Solution : Supabase -> ouvrir le projet -> "Restore project", patienter 1-2 minutes.
+- **Copier-coller de code** : en integrant du code fourni par etapes, verifier qu'aucun bloc n'a ete colle deux fois (imports dupliques, declarations `useState` dupliquees, ou blocs JSX dupliques qui n'empechent pas le build mais dedoublent l'affichage).
+
+## Ce qui reste a faire (V2 et au-dela)
+
+- Remplacer les placeholders visuels restants par de vraies photos produits (Cloudinary recommande pour l'upload et l'optimisation automatique)
+- Completer les CGV (`src/app/cgv/page.tsx`) avec les informations legales de l'entite malienne
+- Paiement en ligne (Wave / Orange Money) pour les commandes Senegal/Mali, si le volume le justifie un jour
+- Suivi de commande et historique client -- necessiterait d'abord de reintroduire un enregistrement des commandes en base, actuellement volontairement absent (choix V1 : tout passe par WhatsApp)
